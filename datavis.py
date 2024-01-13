@@ -36,9 +36,9 @@ def create_pie_chart(data, x_column):
     fig = px.pie(data, names=x_column, values=x_column)
     st.plotly_chart(fig)
 
-def create_choropleth_map(data, zip_column, value_column, zip_code_database):
-    data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
-    fig = px.choropleth_mapbox(data, lat='latitude', lon='longitude', color=value_column,
+def create_choropleth_map(data, zip_column, value_column, geojson):
+    fig = px.choropleth_mapbox(data, geojson=geojson, locations=zip_column, color=value_column,
+                               featureidkey="properties.ZIP",  # Adjust the featureidkey based on your GeoJSON
                                mapbox_style="carto-positron", zoom=3, center={"lat": 37.0902, "lon": -95.7129})
     st.plotly_chart(fig)
 
