@@ -29,11 +29,9 @@ def create_pie_chart(data, column):
     fig = px.pie(data, names=column, values=data.columns[0])
     st.plotly_chart(fig)
 
-def create_choropleth_map(data, zip_column, value_column):
-    url = 'https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/tx_texas_zip_codes_geo.min.json'
-    geojson = json.loads(requests.get(url).text)
-    fig = px.choropleth(data, geojson=geojson, locations=zip_column, featureidkey="properties.ZCTA5CE10", color=value_column)
-    fig.update_geos(fitbounds="locations", visible=False)
+def create_choropleth_map(data):
+    st.subheader("Create Choropleth Map")
+    fig = px.choropleth(data, locations="Zip Code", locationmode="USA-states", color="Applicant Enrollment", scope="usa")
     st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
@@ -95,25 +93,16 @@ def main():
         st.subheader("Uploaded CSV Data")
         st.dataframe(data)
 
-        st.subheader("Column Selections for Visualizations")
-        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
-        y_column = st.selectbox("Select Y-axis Column for Chart", data.columns.tolist(), index=1)
-        selected_pivot_rows = st.multiselect("Select Rows for Pivot Table", data.columns.tolist(), default=None)
-        selected_pivot_columns = st.multiselect("Select Columns for Pivot Table", data.columns.tolist(), default=None)
-        selected_pivot_values = st.selectbox("Select Values for Pivot Table", data.columns.tolist(), index=0)
-        selected_map_value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
-
         if st.button("Create Column Chart"):
-            create_column_chart(data, x_column, y_column)
+            create_column_chart(data, "X-axis Column", "Y-axis Column")
 
         if st.button("Create Pie Chart"):
-            create_pie_chart(data, x_column)
+            create_pie_chart(data, "Column")
 
-        if st.button("Create Choropleth Map"):
-            create_choropleth_map(data, zip_column, selected_map_value_column)
+        create_choropleth_map(data)
 
         if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_pivot_rows, selected_pivot_columns, selected_pivot_values)
+            create_pivot_table(data, ["Rows"], ["Columns"], "Values")
 
 if __name__ == "__main__":
     main()
