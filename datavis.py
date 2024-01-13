@@ -20,18 +20,16 @@ def handle_missing_data(data, col_types):
     return data
 
 def create_column_chart(data, x_column, y_column):
-    st.subheader("Column Chart")
+    st.subheader("Create Column Chart")
     if x_column and y_column:
         fig = px.bar(data, x=x_column, y=y_column)
         st.plotly_chart(fig)
 
 def create_pie_chart(data, column):
-    st.subheader("Pie Chart")
     fig = px.pie(data, names=column, values=data.columns[0])
     st.plotly_chart(fig)
 
 def create_choropleth_map(data, zip_column, value_column):
-    st.subheader("Choropleth Map")
     url = 'https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/tx_texas_zip_codes_geo.min.json'
     geojson = json.loads(requests.get(url).text)
     fig = px.choropleth(data, geojson=geojson, locations=zip_column, featureidkey="properties.ZCTA5CE10", color=value_column)
@@ -39,16 +37,17 @@ def create_choropleth_map(data, zip_column, value_column):
     st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
-    st.subheader("Pivot Table")
-    try:
-        if pd.api.types.is_numeric_dtype(data[values]):
-            agg_func = 'sum'
-        else:
-            agg_func = 'count'
-        pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
-        st.write(pivot_table)
-    except Exception as e:
-        st.error(f"Error creating pivot table: {e}")
+    st.subheader("Create Pivot Table")
+    if rows and columns and values:
+        try:
+            if pd.api.types.is_numeric_dtype(data[values]):
+                agg_func = 'sum'
+            else:
+                agg_func = 'count'
+            pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
+            st.write(pivot_table)
+        except Exception as e:
+            st.error(f"Error creating pivot table: {e}")
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = []
@@ -93,24 +92,28 @@ def main():
                 except Exception as e:
                     st.error(f"Error reloading data: {e}")
 
-        if st.button("Create Chart"):
-            chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
-            if chart_type == "Column Chart":
-                x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
-                y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
-                create_column_chart(data, x_column, y_column)
-            elif chart_type == "Pie Chart":
-                selected_column = st.selectbox("Select a column for the Pie Chart", data.columns.tolist(), index=0)
-                create_pie_chart(data, selected_column)
-            elif chart_type == "Choropleth Map":
-                value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
-                create_choropleth_map(data, zip_column, value_column)
+        st.subheader("Uploaded CSV Data")
+        st.dataframe(data)
+
+        st.subheader("Column Selections for Visualizations")
+        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
+        y_column = st.selectbox("Select Y-axis Column for Chart", data.columns.tolist(), index=1)
+        selected_pivot_rows = st.multiselect("Select Rows for Pivot Table", data.columns.tolist(), default=None)
+        selected_pivot_columns = st.multiselect("Select Columns for Pivot Table", data.columns.tolist(), default=None)
+        selected_pivot_values = st.selectbox("Select Values for Pivot Table", data.columns.tolist(), index=0)
+        selected_map_value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
+
+        if st.button("Create Column Chart"):
+            create_column_chart(data, x_column, y_column)
+
+        if st.button("Create Pie Chart"):
+            create_pie_chart(data, x_column)
+
+        if st.button("Create Choropleth Map"):
+            create_choropleth_map(data, zip_column, selected_map_value_column)
 
         if st.button("Create Pivot Table"):
-            rows = st.multiselect("Select Rows", data.columns.tolist(), default=None)
-            columns = st.multiselect("Select Columns", data.columns.tolist(), default=None)
-            values = st.selectbox("Select Values", data.columns.tolist(), index=0)
-            create_pivot_table(data, rows, columns, values)
+            create_pivot_table(data, selected_pivot_rows, selected_pivot_columns, selected_pivot_values)
 
-if __name__ == "__main__":
+if __name__ == "main":
     main()
