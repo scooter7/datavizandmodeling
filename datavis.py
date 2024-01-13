@@ -20,8 +20,10 @@ def handle_missing_data(data, col_types):
     return data
 
 def create_column_chart(data, x_column, y_column):
-    fig = px.bar(data, x=x_column, y=y_column)
-    st.plotly_chart(fig)
+    st.subheader("Create Column Chart")
+    if x_column and y_column:
+        fig = px.bar(data, x=x_column, y=y_column)
+        st.plotly_chart(fig)
 
 def create_pie_chart(data, column):
     fig = px.pie(data, names=column, values=data.columns[0])
@@ -83,7 +85,9 @@ def main():
 
         chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
         if chart_type == "Column Chart":
-            create_column_chart(data)
+            x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
+            y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
+            create_column_chart(data, x_column, y_column)
         elif chart_type == "Pie Chart":
             selected_column = st.selectbox("Select a column for the Pie Chart", data.columns.tolist(), index=0)
             create_pie_chart(data, selected_column)
