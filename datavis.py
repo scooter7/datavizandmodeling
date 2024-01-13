@@ -1,7 +1,8 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
 import plotly.express as px
 import requests
+import openpyxl
 
 def format_zip_codes(data, zip_column):
     if zip_column in data.columns:
@@ -36,10 +37,10 @@ def create_pie_chart(data, x_column):
     fig = px.pie(data, names=x_column, values=x_column)
     st.plotly_chart(fig)
 
-def create_choropleth_map(data, zip_column, value_column, geojson):
-    fig = px.choropleth_mapbox(data, geojson=geojson, locations=zip_column, color=value_column,
-                               featureidkey="properties.ZIP",  # Adjust the featureidkey based on your GeoJSON
-                               mapbox_style="carto-positron", zoom=3, center={"lat": 37.0902, "lon": -95.7129})
+def create_density_map(data, zip_column, value_column, zip_code_database):
+    merged_data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
+                            center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="stamen-terrain")
     st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
@@ -69,23 +70,13 @@ def main():
                 data = handle_missing_data(data, mixed_type_cols)
                 st.success("Data reloaded with specified data types.")
 
+        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
         selected_pivot_rows = st.multiselect("Select Rows for Pivot Table", data.columns.tolist(), default=None)
         selected_pivot_columns = st.multiselect("Select Columns for Pivot Table", data.columns.tolist(), default=None)
         selected_pivot_values = st.selectbox("Select Values for Pivot Table", data.columns.tolist(), index=0)
-        
-        if selected_pivot_rows:
-            data[selected_pivot_rows] = data[selected_pivot_rows].astype(str)
-        if selected_pivot_columns:
-            data[selected_pivot_columns] = data[selected_pivot_columns].astype(str)
-
-        selected_map_zip_column = st.selectbox("Select Zip Column for Choropleth Map", data.columns.tolist(), index=0)
-        selected_map_value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=1)
+        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
+        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
         zip_code_database = load_zip_code_database()
-        
-        data[selected_map_zip_column] = data[selected_map_zip_column].astype(str)
-        zip_code_database['zip'] = zip_code_database['zip'].astype(str)
-
-        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
 
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
@@ -93,13 +84,12 @@ def main():
         if st.button("Create Pie Chart"):
             create_pie_chart(data, x_column)
 
-        if st.button("Create Choropleth Map"):
-            create_choropleth_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
+        if st.button("Create Density Map"):
+            create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
             create_pivot_table(data, selected_pivot_rows, selected_pivot_columns, selected_pivot_values)
 
 if __name__ == "__main__":
     main()
-
 
