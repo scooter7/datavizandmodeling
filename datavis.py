@@ -19,10 +19,8 @@ def handle_missing_data(data, col_types):
                 data[col] = data[col].fillna(mean_value)
     return data
 
-def create_column_chart(data):
+def create_column_chart(data, x_column, y_column):
     st.subheader("Create Column Chart")
-    x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
-    y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
     if x_column and y_column:
         fig = px.bar(data, x=x_column, y=y_column)
         st.plotly_chart(fig)
@@ -72,12 +70,10 @@ def main():
             st.error("No columns to parse from file. Please check the file format and contents.")
             return
 
-        # Zip code formatting
         zip_column = st.text_input("Enter the name of the zip code column (if applicable):")
         if zip_column:
             data = format_zip_codes(data, zip_column)
 
-        # Handling mixed type columns
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             st.warning("Some columns have mixed types and may need data type specification:")
@@ -93,7 +89,6 @@ def main():
                 except Exception as e:
                     st.error(f"Error reloading data: {e}")
 
-        # Chart Creation Section
         chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
         
         if chart_type == "Column Chart":
@@ -112,9 +107,9 @@ def main():
             if st.button("Create Choropleth Map"):
                 create_choropleth_map(data, zip_column, value_column)
 
-        # Pivot Table Creation Section
         if st.button("Create Pivot Table"):
             create_pivot_table(data)
 
 if __name__ == "__main__":
     main()
+
