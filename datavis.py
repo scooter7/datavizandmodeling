@@ -42,11 +42,16 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
 
-    # Merge the dataframes
-    merged_data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+    # Aggregate the data by ZIP code and 'Applicant Enrollment' category
+    aggregated_data = data.groupby([zip_column, value_column]).size().reset_index(name='count')
+    aggregated_data = aggregated_data.pivot(index=zip_column, columns=value_column, values='count').fillna(0)
+    aggregated_data = aggregated_data.reset_index()
 
-    # Create the density map
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
+    # Merge the dataframes
+    merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+
+    # Create the density map using the summed values
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='Yes', radius=10,  # Assuming 'yes' is one of the categories
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="stamen-terrain")
     st.plotly_chart(fig)
 
