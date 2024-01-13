@@ -101,5 +101,5 @@ def main():
             value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
             create_choropleth_map(data, zip_column, value_column)
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()
