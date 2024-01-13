@@ -4,9 +4,28 @@ import plotly.express as px
 import json
 import requests
 
-def create_column_chart(data, column):
-    fig = px.bar(data, x=column, y=data.columns[0])
-    st.plotly_chart(fig)
+def format_zip_codes(data, zip_column):
+    if zip_column in data.columns:
+        data[zip_column] = data[zip_column].apply(lambda x: str(x).zfill(5) if pd.notnull(x) else x)
+    return data
+
+def handle_missing_data(data, col_types):
+    for col, col_type in col_types.items():
+        if col_type == 'str':
+            data[col] = data[col].fillna('blank')
+        elif col_type in ['numeric', 'float']:
+            if data[col].isnull().any():
+                mean_value = data[col].mean()
+                data[col] = data[col].fillna(mean_value)
+    return data
+
+def create_column_chart(data):
+    st.subheader("Create Column Chart")
+    x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
+    y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
+    if x_column and y_column:
+        fig = px.bar(data, x=x_column, y=y_column)
+        st.plotly_chart(fig)
 
 def create_pie_chart(data, column):
     fig = px.pie(data, names=column, values=data.columns[0])
@@ -45,7 +64,7 @@ def detect_mixed_type_columns(df):
 def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    
+
     if uploaded_file is not None:
         try:
             data = pd.read_csv(uploaded_file, low_memory=False)
@@ -53,32 +72,34 @@ def main():
             st.error("No columns to parse from file. Please check the file format and contents.")
             return
 
+        zip_column = st.text_input("Enter the name of the zip code column (if applicable):")
+        if zip_column:
+            data = format_zip_codes(data, zip_column)
+
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             st.warning("Some columns have mixed types and may need data type specification:")
             col_types = {}
             for col in mixed_type_cols:
-                col_type = st.selectbox(f"Select data type for '{col}'", ['Default', 'str', 'int', 'float'], key=col)
-                if col_type != 'Default':
-                    col_types[col] = col_type
+                col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'numeric', 'float', 'date/time'], key=col, index=0)
+                col_types[col] = col_type
             if st.button("Reload Data with Specified Types"):
                 try:
                     data = pd.read_csv(uploaded_file, dtype=col_types, low_memory=False)
-                    st.success("Data reloaded with specified data types.")
+                    data = handle_missing_data(data, col_types)
+                    st.success("Data reloaded with specified data types and missing data handled.")
                 except Exception as e:
                     st.error(f"Error reloading data: {e}")
 
-        create_pivot_table(data)
-        columns = data.columns.tolist()
-        selected_column = st.selectbox("Select a column to visualize", columns)
         chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
         if chart_type == "Column Chart":
-            create_column_chart(data, selected_column)
+            create_column_chart(data)
         elif chart_type == "Pie Chart":
+            selected_column = st.selectbox("Select a column for the Pie Chart", data.columns.tolist(), index=0)
             create_pie_chart(data, selected_column)
         elif chart_type == "Choropleth Map":
-            value_column = st.selectbox("Select Value Column for Choropleth Map", columns)
-            create_choropleth_map(data, selected_column, value_column)
+            value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
+            create_choropleth_map(data, zip_column, value_column)
 
-if __name__ == "__main__":
+if __name__ == "main":
     main()
