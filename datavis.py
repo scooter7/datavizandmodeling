@@ -52,9 +52,18 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
     st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
+    # Convert columns to string to ensure they are 1-dimensional
+    data[rows] = data[rows].astype(str) if rows else data[rows]
+    data[columns] = data[columns].astype(str) if columns else data[columns]
+    data[values] = data[values].astype(str) if values else data[values]
+
     agg_func = st.selectbox("Select Aggregation Function", ['sum', 'count', 'mean'], index=0)
-    pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
-    st.write(pivot_table)
+    
+    try:
+        pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
+        st.write(pivot_table)
+    except Exception as e:
+        st.error(f"Error creating pivot table: {e}")
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
