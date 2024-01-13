@@ -72,10 +72,12 @@ def main():
             st.error("No columns to parse from file. Please check the file format and contents.")
             return
 
+        # Zip code formatting
         zip_column = st.text_input("Enter the name of the zip code column (if applicable):")
         if zip_column:
             data = format_zip_codes(data, zip_column)
 
+        # Handling mixed type columns
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             st.warning("Some columns have mixed types and may need data type specification:")
@@ -91,15 +93,29 @@ def main():
                 except Exception as e:
                     st.error(f"Error reloading data: {e}")
 
+        # Chart Creation Section
         chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
+        
         if chart_type == "Column Chart":
-            create_column_chart(data)
+            x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
+            y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
+            if st.button("Create Column Chart"):
+                create_column_chart(data, x_column, y_column)
+        
         elif chart_type == "Pie Chart":
             selected_column = st.selectbox("Select a column for the Pie Chart", data.columns.tolist(), index=0)
-            create_pie_chart(data, selected_column)
+            if st.button("Create Pie Chart"):
+                create_pie_chart(data, selected_column)
+        
         elif chart_type == "Choropleth Map":
             value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
-            create_choropleth_map(data, zip_column, value_column)
+            if st.button("Create Choropleth Map"):
+                create_choropleth_map(data, zip_column, value_column)
+
+        # Pivot Table Creation Section
+        if st.button("Create Pivot Table"):
+            create_pivot_table(data)
 
 if __name__ == "__main__":
+    main()"__main__":
     main()
