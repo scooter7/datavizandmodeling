@@ -57,6 +57,12 @@ def detect_mixed_type_columns(df):
             mixed_type_columns.append(col)
     return mixed_type_columns
 
+def load_and_merge_zip_data(uploaded_data, zip_column_name):
+    zip_code_database_url = "https://github.com/scooter7/datavizandmodeling/raw/main/zip_code_database.xlsx"
+    zip_code_data = pd.read_excel(zip_code_database_url)
+    merged_data = uploaded_data.merge(zip_code_data, left_on=zip_column_name, right_on='zip', how='left')
+    return merged_data
+
 def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
