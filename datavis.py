@@ -117,5 +117,4 @@ def main():
             create_pivot_table(data)
 
 if __name__ == "__main__":
-    main()"__main__":
     main()
