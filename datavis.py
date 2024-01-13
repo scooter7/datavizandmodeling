@@ -20,10 +20,8 @@ def handle_missing_data(data, col_types):
     return data
 
 def create_column_chart(data, x_column, y_column):
-    st.subheader("Create Column Chart")
-    if x_column and y_column:
-        fig = px.bar(data, x=x_column, y=y_column)
-        st.plotly_chart(fig)
+    fig = px.bar(data, x=x_column, y=y_column)
+    st.plotly_chart(fig)
 
 def create_pie_chart(data, column):
     fig = px.pie(data, names=column, values=data.columns[0])
@@ -36,21 +34,9 @@ def create_choropleth_map(data, zip_column, value_column):
     fig.update_geos(fitbounds="locations", visible=False)
     st.plotly_chart(fig)
 
-def create_pivot_table(data):
-    st.subheader("Create Pivot Table")
-    rows = st.multiselect("Select Rows", data.columns.tolist(), default=None)
-    columns = st.multiselect("Select Columns", data.columns.tolist(), default=None)
-    values = st.selectbox("Select Values", data.columns.tolist(), index=0)
-    if rows and columns and values:
-        try:
-            if pd.api.types.is_numeric_dtype(data[values]):
-                agg_func = 'sum'
-            else:
-                agg_func = 'count'
-            pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
-            st.write(pivot_table)
-        except Exception as e:
-            st.error(f"Error creating pivot table: {e}")
+def create_pivot_table(data, rows, columns, values):
+    pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc='sum')
+    st.write(pivot_table)
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = []
@@ -58,6 +44,12 @@ def detect_mixed_type_columns(df):
         if df[col].apply(type).nunique() > 1:
             mixed_type_columns.append(col)
     return mixed_type_columns
+
+def load_and_merge_zip_data(uploaded_data, zip_column_name):
+    zip_code_database_url = "https://github.com/scooter7/datavizandmodeling/raw/main/zip_code_database.xlsx"
+    zip_code_data = pd.read_excel(zip_code_database_url)
+    merged_data = uploaded_data.merge(zip_code_data, left_on=zip_column_name, right_on='zip', how='left')
+    return merged_data
 
 def main():
     st.title("Data Visualization App")
@@ -90,25 +82,14 @@ def main():
                     st.error(f"Error reloading data: {e}")
 
         chart_type = st.selectbox("Select Chart Type", ["Column Chart", "Pie Chart", "Choropleth Map"])
-        
         if chart_type == "Column Chart":
-            x_column = st.selectbox("Select X-axis Column", data.columns.tolist(), index=0)
-            y_column = st.selectbox("Select Y-axis Column", data.columns.tolist(), index=1)
-            if st.button("Create Column Chart"):
-                create_column_chart(data, x_column, y_column)
-        
+            create_column_chart(data)
         elif chart_type == "Pie Chart":
             selected_column = st.selectbox("Select a column for the Pie Chart", data.columns.tolist(), index=0)
-            if st.button("Create Pie Chart"):
-                create_pie_chart(data, selected_column)
-        
+            create_pie_chart(data, selected_column)
         elif chart_type == "Choropleth Map":
             value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=0)
-            if st.button("Create Choropleth Map"):
-                create_choropleth_map(data, zip_column, value_column)
-
-        if st.button("Create Pivot Table"):
-            create_pivot_table(data)
+            create_choropleth_map(data, zip_column, value_column)
 
 if __name__ == "__main__":
     main()
