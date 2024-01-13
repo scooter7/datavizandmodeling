@@ -27,20 +27,23 @@ def create_choropleth_map(data, zip_column, value_column):
 # Function to create a pivot table
 def create_pivot_table(data):
     st.subheader("Create Pivot Table")
-    rows = st.multiselect("Select Rows", data.columns.tolist())
-    columns = st.multiselect("Select Columns", data.columns.tolist())
-    values = st.selectbox("Select Values", data.columns.tolist())
+    rows = st.multiselect("Select Rows", data.columns.tolist(), default=None)
+    columns = st.multiselect("Select Columns", data.columns.tolist(), default=None)
+    values = st.selectbox("Select Values", data.columns.tolist(), index=0)
 
     if rows and columns and values:
-        # Check if the selected 'values' column is numerical
-        if pd.api.types.is_numeric_dtype(data[values]):
-            agg_func = 'sum'
-        else:
-            # If categorical, use 'count' as aggregation function
-            agg_func = 'count'
+        try:
+            # Check if the selected 'values' column is numerical
+            if pd.api.types.is_numeric_dtype(data[values]):
+                agg_func = 'sum'
+            else:
+                # If categorical, use 'count' as the aggregation function
+                agg_func = 'count'
 
-        pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
-        st.write(pivot_table)
+            pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
+            st.write(pivot_table)
+        except Exception as e:
+            st.error(f"Error creating pivot table: {e}")
 
 def main():
     st.title("Data Visualization App")
