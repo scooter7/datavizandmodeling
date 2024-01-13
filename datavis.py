@@ -45,8 +45,14 @@ def detect_mixed_type_columns(df):
 def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    
     if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file, low_memory=False)
+        try:
+            data = pd.read_csv(uploaded_file, low_memory=False)
+        except pd.errors.EmptyDataError:
+            st.error("No columns to parse from file. Please check the file format and contents.")
+            return
+
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             st.warning("Some columns have mixed types and may need data type specification:")
@@ -56,8 +62,12 @@ def main():
                 if col_type != 'Default':
                     col_types[col] = col_type
             if st.button("Reload Data with Specified Types"):
-                data = pd.read_csv(uploaded_file, dtype=col_types, low_memory=False)
-                st.success("Data reloaded with specified data types.")
+                try:
+                    data = pd.read_csv(uploaded_file, dtype=col_types, low_memory=False)
+                    st.success("Data reloaded with specified data types.")
+                except Exception as e:
+                    st.error(f"Error reloading data: {e}")
+
         create_pivot_table(data)
         columns = data.columns.tolist()
         selected_column = st.selectbox("Select a column to visualize", columns)
