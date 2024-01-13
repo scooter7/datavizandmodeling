@@ -30,13 +30,11 @@ def create_pie_chart(data, column):
     st.plotly_chart(fig)
 
 def create_choropleth_map(data, zip_column, value_column):
-    st.subheader("Create Choropleth Map")
-    if zip_column and value_column:
-        url = 'https://raw.githubusercontent.com/open-numbers/dd-covid-19/master/data/dd-covid-19-by-location-2020-12-31.csv'
-        geojson = json.loads(requests.get(url).text)
-        fig = px.choropleth(data, locations=zip_column, geojson=geojson, color=value_column, scope="usa")
-        fig.update_geos(fitbounds="locations", visible=False)
-        st.plotly_chart(fig)
+    url = 'https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/tx_texas_zip_codes_geo.min.json'
+    geojson = json.loads(requests.get(url).text)
+    fig = px.choropleth(data, geojson=geojson, locations=zip_column, featureidkey="properties.ZCTA5CE10", color=value_column)
+    fig.update_geos(fitbounds="locations", visible=False)
+    st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
     st.subheader("Create Pivot Table")
@@ -52,10 +50,11 @@ def create_pivot_table(data, rows, columns, values):
             st.error(f"Error creating pivot table: {e}")
 
 def detect_mixed_type_columns(df):
-    mixed_type_columns = []
+    mixed_type_columns = {}
     for col in df.columns:
         if df[col].apply(type).nunique() > 1:
-            mixed_type_columns.append(col)
+            col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'numeric', 'float', 'date/time'], key=f'{col}_selectbox', index=0)
+            mixed_type_columns[col] = col_type
     return mixed_type_columns
 
 def main():
@@ -69,20 +68,6 @@ def main():
             st.error("No columns to parse from file. Please check the file format and contents.")
             return
 
-        st.subheader("Data Type Specification")
-        col_types = {}
-        for col in data.columns:
-            col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'numeric', 'float', 'date/time'], key=col, index=0)
-            col_types[col] = col_type
-
-        if st.button("Recode Data Types"):
-            try:
-                data = data.astype(col_types)
-                data = handle_missing_data(data, col_types)
-                st.success("Data types recoded and missing data handled.")
-            except Exception as e:
-                st.error(f"Error recoding data types: {e}")
-
         zip_column = st.text_input("Enter the name of the zip code column (if applicable):")
         if zip_column:
             data = format_zip_codes(data, zip_column)
@@ -90,15 +75,11 @@ def main():
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             st.warning("Some columns have mixed types and may need data type specification:")
-            col_types = {}
-            for col in mixed_type_cols:
-                col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'numeric', 'float', 'date/time'], key=col, index=0)
-                col_types[col] = col_type
+            col_types = handle_missing_data(mixed_type_cols)
             if st.button("Reload Data with Specified Types"):
                 try:
                     data = pd.read_csv(uploaded_file, dtype=col_types, low_memory=False)
-                    data = handle_missing_data(data, col_types)
-                    st.success("Data reloaded with specified data types and missing data handled.")
+                    st.success("Data reloaded with specified data types.")
                 except Exception as e:
                     st.error(f"Error reloading data: {e}")
 
@@ -125,5 +106,5 @@ def main():
         if st.button("Create Pivot Table"):
             create_pivot_table(data, selected_pivot_rows, selected_pivot_columns, selected_pivot_values)
 
-if __name__ == "__main__":
+if __name__ == "main":
     main()
