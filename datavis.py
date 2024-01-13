@@ -96,6 +96,9 @@ def main():
         if st.button("Create Pie Chart"):
             create_pie_chart(data, x_column)
 
+        if st.button("Create Density Map"):
+            create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
+
         if st.button("Create Pivot Table"):
             create_pivot_table(data, selected_pivot_index, selected_pivot_column, agg_func)
 
