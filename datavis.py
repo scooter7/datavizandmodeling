@@ -38,21 +38,17 @@ def create_pie_chart(data, x_column):
     st.plotly_chart(fig)
 
 def create_density_map(data, zip_column, value_column, zip_code_database):
-    # Convert the ZIP code columns to strings for consistent data types
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
 
-    # Aggregate the data by ZIP code and 'Applicant Enrollment' category
     aggregated_data = data.groupby([zip_column, value_column]).size().reset_index(name='count')
     aggregated_data = aggregated_data.pivot(index=zip_column, columns=value_column, values='count').fillna(0)
     aggregated_data = aggregated_data.reset_index()
 
-    # Merge the dataframes
     merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
 
-    # Create the density map using the summed values
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='Yes', radius=10,  # Assuming 'yes' is one of the categories
-                            center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="stamen-terrain")
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='yes', radius=10,
+                            center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
 def create_pivot_table(data, rows, columns, values):
