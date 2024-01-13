@@ -88,11 +88,7 @@ def main():
 
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
         selected_pivot_rows = st.multiselect("Select Rows for Pivot Table", data.columns.tolist(), default=None)
-        selected_pivot_columns = st.multiselect("Select Columns for Pivot Table", data.columns.tolist(), default=None)
-        selected_pivot_values = st.selectbox("Select Values for Pivot Table", data.columns.tolist(), index=0)
-        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
-        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
-        zip_code_database = load_zip_code_database()
+        selected_value_column = st.selectbox("Select Column for Pivot Table Values", data.columns.tolist(), index=0)
 
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
@@ -104,7 +100,7 @@ def main():
             create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_pivot_rows, selected_pivot_columns, selected_pivot_values)
+            create_pivot_table(data, selected_pivot_rows, selected_value_column)
 
 if __name__ == "__main__":
     main()
