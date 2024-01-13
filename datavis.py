@@ -32,7 +32,14 @@ def create_pivot_table(data):
     values = st.selectbox("Select Values", data.columns.tolist())
 
     if rows and columns and values:
-        pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc='sum')
+        # Check if the selected 'values' column is numerical
+        if pd.api.types.is_numeric_dtype(data[values]):
+            agg_func = 'sum'
+        else:
+            # If categorical, use 'count' as aggregation function
+            agg_func = 'count'
+
+        pivot_table = pd.pivot_table(data, values=values, index=rows, columns=columns, aggfunc=agg_func)
         st.write(pivot_table)
 
 def main():
