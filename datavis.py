@@ -38,7 +38,14 @@ def create_pie_chart(data, x_column):
     st.plotly_chart(fig)
 
 def create_density_map(data, zip_column, value_column, zip_code_database):
+    # Convert the ZIP code columns to strings for consistent data types
+    data[zip_column] = data[zip_column].astype(str)
+    zip_code_database['zip'] = zip_code_database['zip'].astype(str)
+
+    # Merge the dataframes
     merged_data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+
+    # Create the density map
     fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="stamen-terrain")
     st.plotly_chart(fig)
