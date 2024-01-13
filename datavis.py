@@ -51,13 +51,10 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-def create_pivot_table(data, rows, value_column):
-    # Convert columns to string to ensure they are 1-dimensional
-    data[rows] = data[rows].astype(str) if rows else data[rows]
-    data[value_column] = data[value_column].astype(str) if value_column else data[value_column]
+def create_pivot_table(data, rows, value_column, agg_func):
+    data[rows] = data[rows].astype(str)
+    data[value_column] = data[value_column].astype(str)
 
-    agg_func = st.selectbox("Select Aggregation Function", ['sum', 'count', 'mean'], index=0)
-    
     try:
         pivot_table = pd.pivot_table(data, values=value_column, index=rows, aggfunc=agg_func)
         st.write(pivot_table)
