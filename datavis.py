@@ -47,7 +47,7 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
 
     merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
 
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='yes', radius=10,
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='Yes', radius=10,
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
