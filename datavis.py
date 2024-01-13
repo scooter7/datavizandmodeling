@@ -69,13 +69,23 @@ def main():
                 data = handle_missing_data(data, mixed_type_cols)
                 st.success("Data reloaded with specified data types.")
 
-        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
         selected_pivot_rows = st.multiselect("Select Rows for Pivot Table", data.columns.tolist(), default=None)
         selected_pivot_columns = st.multiselect("Select Columns for Pivot Table", data.columns.tolist(), default=None)
         selected_pivot_values = st.selectbox("Select Values for Pivot Table", data.columns.tolist(), index=0)
+        
+        if selected_pivot_rows:
+            data[selected_pivot_rows] = data[selected_pivot_rows].astype(str)
+        if selected_pivot_columns:
+            data[selected_pivot_columns] = data[selected_pivot_columns].astype(str)
+
         selected_map_zip_column = st.selectbox("Select Zip Column for Choropleth Map", data.columns.tolist(), index=0)
         selected_map_value_column = st.selectbox("Select Value Column for Choropleth Map", data.columns.tolist(), index=1)
         zip_code_database = load_zip_code_database()
+        
+        data[selected_map_zip_column] = data[selected_map_zip_column].astype(str)
+        zip_code_database['zip'] = zip_code_database['zip'].astype(str)
+
+        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
 
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
@@ -84,7 +94,6 @@ def main():
             create_pie_chart(data, x_column)
 
         if st.button("Create Choropleth Map"):
-            format_zip_codes(data, selected_map_zip_column)
             create_choropleth_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
@@ -92,4 +101,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
