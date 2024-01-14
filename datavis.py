@@ -103,6 +103,9 @@ def main():
         if mixed_type_cols:
             if st.button("Reload Data with Specified Types"):
                 data = handle_missing_data(data, mixed_type_cols)
+                for col in mixed_type_cols:
+                    if col in data.columns:
+                        data[col] = data[col].astype(str)
                 st.success("Data reloaded with specified data types.")
 
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
@@ -125,9 +128,7 @@ def main():
             create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
-            cleaned_data = clean_data_for_pivot(data)
-            cleaned_data = flatten_column(cleaned_data, 'Applicant Enrollment')
-            create_pivot_table(cleaned_data, selected_pivot_index, selected_pivot_column, selected_value_column, agg_func)
+            create_pivot_table(data, selected_pivot_index, selected_pivot_column, selected_value_column, agg_func)
 
 if __name__ == "__main__":
     main()
