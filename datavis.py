@@ -60,11 +60,12 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-def create_pivot_table(data, index_column, values_column):
-    data[index_column] = data[index_column].astype(str)
-    data[values_column] = data[values_column].astype(str)
+# Updated create_pivot_table function
+def create_pivot_table(data, selected_index_column, selected_values_column):
+    data[selected_index_column] = data[selected_index_column].astype(str)
+    data[selected_values_column] = data[selected_values_column].astype(str)
 
-    pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
+    pivot_table = pd.pivot_table(data, index=selected_index_column, columns=selected_values_column, aggfunc='count', fill_value=0)
     flat_pivot_table = pivot_table.reset_index()
 
     # Flatten MultiIndex columns (if any) and convert them to strings
