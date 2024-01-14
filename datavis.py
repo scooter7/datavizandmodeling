@@ -60,19 +60,22 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-def create_pivot_table(data, index_column, pivot_column, agg_func):
-    # Clean and flatten data for the pivot table
-    cleaned_data = clean_data_for_pivot(data)
+def create_pivot_table(data, index_column, pivot_column, values_column):
+    # Convert columns to string to ensure they are 1-dimensional
+    data[index_column] = data[index_column].astype(str)
+    data[pivot_column] = data[pivot_column].astype(str)
 
-    # Creating the pivot table
-    pivot_table = pd.pivot_table(
-        cleaned_data, 
-        index=index_column, 
-        columns=pivot_column, 
-        aggfunc={'count' if cleaned_data[pivot_column].dtype == 'object' else agg_func}, 
-        fill_value=0
-    )
-    st.write(pivot_table)
+    # Determine the aggregation function
+    if pd.api.types.is_numeric_dtype(data[values_column]):
+        agg_func = 'sum'
+    else:
+        agg_func = 'count'
+
+    try:
+        pivot_table = pd.pivot_table(data, values=values_column, index=index_column, columns=pivot_column, aggfunc=agg_func, fill_value=0)
+        st.write(pivot_table)
+    except Exception as e:
+        st.error(f"Error creating pivot table: {e}")
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
@@ -97,13 +100,14 @@ def main():
                 st.success("Data reloaded with specified data types.")
 
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
-        selected_pivot_index = st.selectbox("Select Index Column for Pivot Table", data.columns.tolist(), index=0)
-        selected_pivot_column = st.selectbox("Select Column for Pivot Table Columns", data.columns.tolist(), index=1)
-        agg_func = st.selectbox("Select Aggregation Function for Pivot Table", ['sum', 'count', 'mean'], index=0)
-
         selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
         selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
         zip_code_database = load_zip_code_database()
+
+        selected_pivot_index = st.selectbox("Select Index Column for Pivot Table", data.columns.tolist(), index=0)
+        selected_pivot_column = st.selectbox("Select Column for Pivot Table Columns", data.columns.tolist(), index=1)
+        selected_value_column = st.selectbox("Select Values Column for Pivot Table", data.columns.tolist(), index=2)
+        agg_func = st.selectbox("Select Aggregation Function for Pivot Table", ['sum', 'count', 'mean'], index=0)
 
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
@@ -116,7 +120,7 @@ def main():
 
         if st.button("Create Pivot Table"):
             cleaned_data = clean_data_for_pivot(data)
-            create_pivot_table(cleaned_data, selected_pivot_index, selected_pivot_column, agg_func)
+            create_pivot_table(cleaned_data, selected_pivot_index, selected_pivot_column, selected_value_column, agg_func)
 
 if __name__ == "__main__":
     main()
