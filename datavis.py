@@ -84,6 +84,12 @@ def detect_mixed_type_columns(df):
         mixed_type_columns[col] = col_type
     return mixed_type_columns
 
+def flatten_column(data, column_name):
+    if column_name in data.columns:
+        # Convert complex structures to string or another simple format
+        data[column_name] = data[column_name].apply(lambda x: ','.join(x) if isinstance(x, list) else x)
+    return data
+    
 def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -120,9 +126,8 @@ def main():
 
         if st.button("Create Pivot Table"):
             cleaned_data = clean_data_for_pivot(data)
+            cleaned_data = flatten_column(cleaned_data, 'Applicant Enrollment')
             create_pivot_table(cleaned_data, selected_pivot_index, selected_pivot_column, selected_value_column, agg_func)
 
 if __name__ == "__main__":
     main()
-
-
