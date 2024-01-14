@@ -60,7 +60,7 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-def create_pivot_table(data, index_column, pivot_column, values_column):
+def create_pivot_table(data, index_column, pivot_column, values_column, agg_func):
     # Convert columns to string to ensure they are 1-dimensional
     data[index_column] = data[index_column].astype(str)
     data[pivot_column] = data[pivot_column].astype(str)
