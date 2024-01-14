@@ -78,6 +78,10 @@ def main():
         selected_pivot_column = st.selectbox("Select Column for Pivot Table Columns", data.columns.tolist(), index=1)
         agg_func = st.selectbox("Select Aggregation Function for Pivot Table", ['sum', 'count', 'mean'], index=0)
 
+        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
+        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
+        zip_code_database = load_zip_code_database()
+
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
 
