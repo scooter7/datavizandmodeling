@@ -70,9 +70,8 @@ def create_pivot_table(data, index_column, values_column):
     # Flatten MultiIndex columns (if any) and convert them to strings
     flat_pivot_table.columns = ['_'.join(map(str, col_tuple)) for col_tuple in flat_pivot_table.columns.values]
 
-    # Convert the DataFrame to a list of dictionaries
-    data_records = flat_pivot_table.to_dict(orient='records')
-    st.write(data_records)
+    # Display using st.dataframe
+    st.dataframe(flat_pivot_table)
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
