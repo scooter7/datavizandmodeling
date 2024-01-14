@@ -83,11 +83,12 @@ def detect_mixed_type_columns(df):
         col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'numeric', 'float', 'date/time'], key=f'{col}_selectbox', index=0)
         mixed_type_columns[col] = col_type
     return mixed_type_columns
-
-def flatten_column(data, column_name):
+    
+def standardize_column(data, column_name):
+    # Ensure the column exists in the DataFrame
     if column_name in data.columns:
-        # Convert complex structures to string or another simple format
-        data[column_name] = data[column_name].apply(lambda x: ','.join(x) if isinstance(x, list) else x)
+        # Convert any complex or mixed types to string
+        data[column_name] = data[column_name].apply(lambda x: ','.join(map(str, x)) if isinstance(x, (list, tuple)) else str(x))
     return data
     
 def main():
@@ -104,8 +105,7 @@ def main():
             if st.button("Reload Data with Specified Types"):
                 data = handle_missing_data(data, mixed_type_cols)
                 for col in mixed_type_cols:
-                    if col in data.columns:
-                        data[col] = data[col].astype(str)
+                    data = standardize_column(data, col)
                 st.success("Data reloaded with specified data types.")
 
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
