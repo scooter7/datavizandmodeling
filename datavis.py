@@ -97,16 +97,16 @@ def main():
 
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file, low_memory=False)
-        st.subheader("Uploaded CSV Data")
+        st.subheader("Original CSV Data")
         st.dataframe(data)
 
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
             if st.button("Reload Data with Specified Types"):
                 data = handle_missing_data(data, mixed_type_cols)
-                for col in mixed_type_cols:
-                    data = standardize_column(data, col)
                 st.success("Data reloaded with specified data types.")
+                st.subheader("Processed CSV Data")
+                st.dataframe(data)  # Display the processed data
 
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
         selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
