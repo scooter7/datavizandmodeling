@@ -76,7 +76,7 @@ def create_pivot_table(data, index_column, values_column):
     flat_pivot_table = pivot_table.reset_index()
 
     # Display using st.dataframe
-    st.dataframe(flat_pivot_table)
+    st.write(flat_pivot_table)  # Use st.write instead of st.dataframe
     
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
