@@ -65,7 +65,8 @@ def create_pivot_table(data, index_column, values_column):
     data[values_column] = data[values_column].astype(str)
 
     pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
-    st.write(pivot_table)
+    flat_pivot_table = pivot_table.reset_index()  # Flatten the pivot table
+    st.write(flat_pivot_table)
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
