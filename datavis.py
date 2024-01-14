@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 import openpyxl
+from st_aggrid import AgGrid
 
 def format_zip_codes(data, zip_column):
     if zip_column in data.columns:
@@ -60,8 +61,8 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-# Updated create_pivot_table function
 def create_pivot_table(data, index_column, values_column):
+    st.write(f"Pivot Table for {values_column} by {index_column}")
     data[index_column] = data[index_column].astype(str)
     data[values_column] = data[values_column].astype(str)
 
@@ -71,9 +72,9 @@ def create_pivot_table(data, index_column, values_column):
     # Flatten the pivot table and reset the index
     flat_pivot_table = pivot_table.reset_index()
 
-    # Display the pivot table
-    st.write(flat_pivot_table)
-    
+    # Display the pivot table using st-aggrid
+    AgGrid(flat_pivot_table)
+
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
     for col in df.columns:
