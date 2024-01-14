@@ -71,11 +71,8 @@ def create_pivot_table(data, index_column, values_column):
     # Flatten the pivot table and reset the index
     flat_pivot_table = pivot_table.reset_index()
 
-    # Convert the pivot table to a string
-    pivot_table_str = flat_pivot_table.to_string(index=False)
-
-    # Display using st.text instead of st.dataframe
-    st.text(pivot_table_str)
+    # Display using st.dataframe
+    st.dataframe(flat_pivot_table)
     
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
