@@ -42,7 +42,7 @@ def create_pie_chart(data, x_column):
     fig = px.pie(data, names=x_column, values=x_column)
     st.plotly_chart(fig)
 
-ef create_density_map(data, zip_column, value_column, zip_code_database):
+def create_density_map(data, zip_column, value_column, zip_code_database):
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
 
