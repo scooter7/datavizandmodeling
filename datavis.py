@@ -65,19 +65,11 @@ def create_pivot_table(data, index_column, values_column):
     data[index_column] = data[index_column].astype(str)
     data[values_column] = data[values_column].astype(str)
 
-    # Filter the data to only include rows where the values_column matches the selected values
-    selected_values = ['Male', 'Female', 'nan']  # Define the values to include
-    filtered_data = data[data[values_column].isin(selected_values)]
-
-    # Create a pivot table with the filtered data
-    pivot_table = pd.pivot_table(filtered_data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
+    # Create a pivot table with each value of the selected column as separate columns
+    pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
 
     # Flatten the pivot table and reset the index
     flat_pivot_table = pivot_table.reset_index()
-
-    # Keep only the selected values columns
-    selected_columns = [index_column] + [(values_column, val) for val in selected_values]
-    flat_pivot_table = flat_pivot_table[selected_columns]
 
     # Convert the pivot table to a string
     pivot_table_str = flat_pivot_table.to_string(index=False)
