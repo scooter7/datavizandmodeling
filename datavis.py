@@ -63,19 +63,21 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
 # Updated create_pivot_table function
 def create_pivot_table(data, index_column, values_column):
     data[index_column] = data[index_column].astype(str)
-    
-    # Filter the data to only include rows where the values_column matches the selected values
-    filtered_data = data[data[values_column].isin(['Male', 'Female', 'nan'])]
-    
-    pivot_table = pd.pivot_table(filtered_data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
-    flat_pivot_table = pivot_table.reset_index()
+    data[values_column] = data[values_column].astype(str)
 
-    # Flatten MultiIndex columns (if any) and convert them to strings
-    flat_pivot_table.columns = ['_'.join(map(str, col_tuple)) for col_tuple in flat_pivot_table.columns.values]
+    # Filter the data to only include rows where the values_column matches the selected values
+    selected_values = ['Male', 'Female', 'nan']  # Define the values to include
+    filtered_data = data[data[values_column].isin(selected_values)]
+
+    # Create a pivot table with the filtered data
+    pivot_table = pd.pivot_table(filtered_data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
+
+    # Flatten the pivot table and reset the index
+    flat_pivot_table = pivot_table.reset_index()
 
     # Display using st.dataframe
     st.dataframe(flat_pivot_table)
-
+    
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
     for col in df.columns:
