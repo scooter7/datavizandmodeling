@@ -19,6 +19,11 @@ def handle_missing_data(data, col_types):
                 data[col] = data[col].fillna(mean_value)
     return data
 
+def clean_data_for_pivot(data):
+    for col in data.columns:
+        data[col] = data[col].astype(str)
+    return data
+
 def load_zip_code_database():
     url = 'https://github.com/scooter7/datavizandmodeling/blob/main/zip_code_database.xlsx?raw=true'
     return pd.read_excel(url)
@@ -40,18 +45,8 @@ def create_pie_chart(data, x_column):
 def create_density_map(data, zip_column, value_column, zip_code_database):
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
-
-    # Filter data for 'Yes' values in the Applicant Enrollment column
-    filtered_data = data[data[value_column] == 'Yes']
-
-    # Count occurrences of 'Yes' by ZIP Code
-    aggregated_data = filtered_data.groupby(zip_column).size().reset_index(name='count')
-    
-    # Merge the aggregated data with the ZIP code database
-    merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
-
-    # Create the density map using the count of 'Yes' values
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='count', radius=10,
+    merged_data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
@@ -102,7 +97,9 @@ def main():
             create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_pivot_index, selected_pivot_column, agg_func)
+            cleaned_data = clean_data_for_pivot(data)
+            create_pivot_table(cleaned_data, selected_pivot_index, selected_pivot_column, agg_func)
 
 if __name__ == "__main__":
     main()
+
