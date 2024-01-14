@@ -40,28 +40,16 @@ def create_pie_chart(data, x_column):
 def create_density_map(data, zip_column, value_column, zip_code_database):
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
-
-    aggregated_data = data.groupby([zip_column, value_column]).size().reset_index(name='count')
-    aggregated_data = aggregated_data.pivot(index=zip_column, columns=value_column, values='count').fillna(0)
-    aggregated_data = aggregated_data.reset_index()
-
-    merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
-
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='Yes', radius=10,
+    merged_data = data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
 def create_pivot_table(data, index_column, pivot_column, agg_func):
-    # Convert columns to string to ensure they are 1-dimensional
     data[index_column] = data[index_column].astype(str)
     data[pivot_column] = data[pivot_column].astype(str)
-
-    try:
-        # Creating the pivot table
-        pivot_table = pd.pivot_table(data, index=index_column, columns=pivot_column, aggfunc=agg_func, fill_value=0)
-        st.write(pivot_table)
-    except Exception as e:
-        st.error(f"Error creating pivot table: {e}")
+    pivot_table = pd.pivot_table(data, index=index_column, columns=pivot_column, aggfunc=agg_func, fill_value=0)
+    st.write(pivot_table)
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
@@ -104,7 +92,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
