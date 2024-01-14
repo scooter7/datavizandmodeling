@@ -41,14 +41,17 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
     data[zip_column] = data[zip_column].astype(str)
     zip_code_database['zip'] = zip_code_database['zip'].astype(str)
 
-    # Aggregate sum of Applicant Enrollment by ZIP Code
-    aggregated_data = data.groupby(zip_column)[value_column].sum().reset_index()
+    # Filter data for 'Yes' values in the Applicant Enrollment column
+    filtered_data = data[data[value_column] == 'Yes']
+
+    # Count occurrences of 'Yes' by ZIP Code
+    aggregated_data = filtered_data.groupby(zip_column).size().reset_index(name='count')
     
     # Merge the aggregated data with the ZIP code database
     merged_data = aggregated_data.merge(zip_code_database, how='left', left_on=zip_column, right_on='zip')
 
-    # Create the density map using the sum of Applicant Enrollment
-    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z=value_column, radius=10,
+    # Create the density map using the count of 'Yes' values
+    fig = px.density_mapbox(merged_data, lat='latitude', lon='longitude', z='count', radius=10,
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
