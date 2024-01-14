@@ -75,6 +75,10 @@ def create_pivot_table(data, index_column, values_column):
     # Flatten the pivot table and reset the index
     flat_pivot_table = pivot_table.reset_index()
 
+    # Keep only the selected values columns
+    selected_columns = [index_column] + [(values_column, val) for val in selected_values]
+    flat_pivot_table = flat_pivot_table[selected_columns]
+
     # Convert the pivot table to a string
     pivot_table_str = flat_pivot_table.to_string(index=False)
 
