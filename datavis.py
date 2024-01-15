@@ -61,15 +61,21 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
     st.plotly_chart(fig)
 
 def create_pivot_table(data, index_columns, column_columns, values_column):
-    # Ensure the columns exist in the DataFrame
-    for col in [index_columns, column_columns, values_column]:
-        if col not in data.columns:
-            st.error(f"Column {col} does not exist in the data.")
-            return None
+    # Ensure all selected columns exist in the DataFrame
+    missing_columns = [col for col in index_columns + column_columns + [values_column] if col not in data.columns]
+    if missing_columns:
+        st.error(f"Missing columns in the data: {', '.join(missing_columns)}")
+        return None
 
     # Use the selected columns for the pivot table
-    pivot_table = pd.pivot_table(data, index=index_columns, columns=column_columns, values=values_column, aggfunc='count', fill_value=0)
+    pivot_table = pd.pivot_table(data, 
+                                 index=index_columns, 
+                                 columns=column_columns, 
+                                 values=values_column, 
+                                 aggfunc='count', 
+                                 fill_value=0)
     st.dataframe(pivot_table)
+
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
@@ -89,43 +95,49 @@ def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
-    data = None
-
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file, low_memory=False)
         st.subheader("Original CSV Data")
         st.dataframe(data)
 
+        # User specifies the data types for each column
         mixed_type_cols = detect_mixed_type_columns(data)
-        if mixed_type_cols:
-            if st.button("Reload Data with Specified Types"):
-                data = handle_missing_data(data, mixed_type_cols)
-                for col in mixed_type_cols:
-                    data = standardize_column(data, col)
-                st.success("Data reloaded with specified data types.")
-                st.subheader("Processed CSV Data")
-                st.dataframe(data)
+        if mixed_type_cols and st.button("Reload Data with Specified Types"):
+            data = handle_missing_data(data, mixed_type_cols)
+            for col, col_type in mixed_type_cols.items():
+                data[col] = data[col].astype(col_type)
+            st.success("Data reloaded with specified data types.")
+            st.subheader("Processed CSV Data")
+            st.dataframe(data)
 
-    if data is not None:
+        # User selects columns for visualization
         x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
         selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
         selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
         zip_code_database = load_zip_code_database()
-        selected_index_columns = st.multiselect("Select Index Columns for Pivot Table (Rows)", data.columns.tolist(), default=[data.columns.tolist()[0]])
-        selected_column_columns = st.multiselect("Select Columns for Pivot Table (Columns)", data.columns.tolist(), default=[data.columns.tolist()[1]])
-        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Values)", data.columns.tolist(), index=2)
 
+        # User selects columns for the pivot table
+        selected_index_columns = st.multiselect("Select Index Columns for Pivot Table (Rows)", data.columns.tolist())
+        selected_column_columns = st.multiselect("Select Columns for Pivot Table (Columns)", data.columns.tolist())
+        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Values)", data.columns.tolist())
+
+        # Button to create column chart
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
 
+        # Button to create pie chart
         if st.button("Create Pie Chart"):
             create_pie_chart(data, x_column)
 
+        # Button to create density map
         if st.button("Create Density Map"):
             create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
+        # Button to create pivot table
+        if selected_index_columns and selected_column_columns and selected_values_column:
         if st.button("Create Pivot Table"):
             create_pivot_table(data, selected_index_columns, selected_column_columns, selected_values_column)
 
-if __name__ == "__main__":
-    main()
+if name == "main":
+main()
+
