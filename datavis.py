@@ -98,7 +98,7 @@ def main():
 
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
-    if st.button("Reload Data with Specified Types"):
+        if st.button("Reload Data with Specified Types"):
         data = handle_missing_data(data, mixed_type_cols)
         for col in mixed_type_cols:
             data = standardize_column(data, col)
