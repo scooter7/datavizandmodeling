@@ -135,9 +135,8 @@ def main():
 
         # Button to create pivot table
         if selected_index_columns and selected_column_columns and selected_values_column:
-        if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_index_columns, selected_column_columns, selected_values_column)
+            if st.button("Create Pivot Table"):
+                create_pivot_table(data, selected_index_columns, selected_column_columns, selected_values_column)
 
-if name == "main":
-main()
-
+if __name__ == "main":
+    main()
