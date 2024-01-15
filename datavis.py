@@ -62,10 +62,10 @@ def create_pivot_table(data, index_column, values_column):
     data[index_column] = data[index_column].astype(str)
     data[values_column] = data[values_column].astype(str)
 
-    pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, values=values_column, aggfunc='count', fill_value=0)
-    pivot_table.columns = pivot_table.columns.droplevel(0)
-    pivot_table.columns.name = None
+    pivot_table = data.pivot_table(index=[index_column], columns=[values_column], aggfunc='size', fill_value=0)
     pivot_table.reset_index(inplace=True)
+    pivot_table.columns = pivot_table.columns.rename(None)
+    pivot_table = pivot_table.rename_axis(columns=None)
 
     st.dataframe(pivot_table)
 
