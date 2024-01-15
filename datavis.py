@@ -64,14 +64,12 @@ def create_pivot_table(data, index_column, values_column):
     data[index_column] = data[index_column].astype(str)
     data[values_column] = data[values_column].astype(str)
 
-    pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, aggfunc='count', fill_value=0)
-    flat_pivot_table = pivot_table.reset_index()
-
-    # Flatten MultiIndex columns (if any) and convert them to strings
-    flat_pivot_table.columns = ['_'.join(map(str, col_tuple)) for col_tuple in flat_pivot_table.columns.values]
+    pivot_table = pd.pivot_table(data, index=index_column, values=values_column, aggfunc='count', fill_value=0)
+    pivot_table.columns.name = None  # Remove the columns' name
+    pivot_table.reset_index(inplace=True)
 
     # Display using st.dataframe
-    st.dataframe(flat_pivot_table)
+    st.dataframe(pivot_table)
 
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
