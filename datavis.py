@@ -60,11 +60,15 @@ def create_density_map(data, zip_column, value_column, zip_code_database):
                             center=dict(lat=37.0902, lon=-95.7129), zoom=3, mapbox_style="open-street-map")
     st.plotly_chart(fig)
 
-def create_pivot_table(data, index_column, values_column):
-    data[index_column] = data[index_column].astype(str)
-    data[values_column] = data[values_column].astype(str)
+def create_pivot_table(data, index_columns, column_columns, values_column):
+    # Ensure the columns exist in the DataFrame
+    for col in [index_columns, column_columns, values_column]:
+        if col not in data.columns:
+            st.error(f"Column {col} does not exist in the data.")
+            return None
 
-    pivot_table = pd.pivot_table(data, index=index_column, columns=values_column, values=values_column, aggfunc='count', fill_value=0)
+    # Use the selected columns for the pivot table
+    pivot_table = pd.pivot_table(data, index=index_columns, columns=column_columns, values=values_column, aggfunc='count', fill_value=0)
     st.dataframe(pivot_table)
 
 def detect_mixed_type_columns(df):
@@ -107,8 +111,9 @@ def main():
         selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
         selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
         zip_code_database = load_zip_code_database()
-        selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
-        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
+        selected_index_columns = st.multiselect("Select Index Columns for Pivot Table (Rows)", data.columns.tolist(), default=[data.columns.tolist()[0]])
+        selected_column_columns = st.multiselect("Select Columns for Pivot Table (Columns)", data.columns.tolist(), default=[data.columns.tolist()[1]])
+        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Values)", data.columns.tolist(), index=2)
 
         if st.button("Create Column Chart"):
             create_column_chart(data, x_column)
@@ -120,7 +125,7 @@ def main():
             create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
         if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_index_column, selected_values_column)
+            create_pivot_table(data, selected_index_columns, selected_column_columns, selected_values_column)
 
 if __name__ == "__main__":
     main()
