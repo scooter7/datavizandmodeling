@@ -93,6 +93,8 @@ def main():
     st.title("Data Visualization App")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
+    data = None
+
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file, low_memory=False)
         st.subheader("Original CSV Data")
@@ -106,27 +108,27 @@ def main():
                     data = standardize_column(data, col)
                 st.success("Data reloaded with specified data types.")
                 st.subheader("Processed CSV Data")
-                st.dataframe(data)  
+                st.dataframe(data)
 
-    x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
-    selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
-    selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
-    zip_code_database = load_zip_code_database()
+    if data is not None:
+        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
+        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
+        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
+        zip_code_database = load_zip_code_database()
+        selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
+        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
 
-    selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
-    selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
+        if st.button("Create Column Chart"):
+            create_column_chart(data, x_column)
 
-    if st.button("Create Column Chart"):
-        create_column_chart(data, x_column)
+        if st.button("Create Pie Chart"):
+            create_pie_chart(data, x_column)
 
-    if st.button("Create Pie Chart"):
-        create_pie_chart(data, x_column)
+        if st.button("Create Density Map"):
+            create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
-    if st.button("Create Density Map"):
-        create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
-
-    if st.button("Create Pivot Table"):
-        create_pivot_table(data, selected_index_column, selected_values_column)  # Create pivot table from processed data
+        if st.button("Create Pivot Table"):
+            create_pivot_table(data, selected_index_column, selected_values_column)
 
 if __name__ == "__main__":
     main()
