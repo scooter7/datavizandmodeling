@@ -4,7 +4,7 @@ import plotly.express as px
 import requests
 import openpyxl
 
-data = None
+data = pd.DataFrame()  # Initialize data as an empty DataFrame
 
 def format_zip_codes(data, zip_column):
     if zip_column in data.columns:
@@ -101,25 +101,26 @@ def main():
                 st.subheader("Processed CSV Data")
                 st.dataframe(data)
 
-    x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
-    selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
-    selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
-    zip_code_database = load_zip_code_database()
+    if not data.empty:  # Check if data is not empty before proceeding
+        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
+        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
+        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
+        zip_code_database = load_zip_code_database()
 
-    selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
-    selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
+        selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
+        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
 
-    if st.button("Create Column Chart"):
-        create_column_chart(data, x_column)
+        if st.button("Create Column Chart"):
+            create_column_chart(data, x_column)
 
-    if st.button("Create Pie Chart"):
-        create_pie_chart(data, x_column)
+        if st.button("Create Pie Chart"):
+            create_pie_chart(data, x_column)
 
-    if st.button("Create Density Map"):
-        create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
+        if st.button("Create Density Map"):
+            create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
-    if st.button("Create Pivot Table"):
-        create_pivot_table(data, selected_index_column, selected_values_column)
+        if st.button("Create Pivot Table"):
+            create_pivot_table(data, selected_index_column, selected_values_column)
 
 if __name__ == "__main__":
     main()
