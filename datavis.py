@@ -98,33 +98,33 @@ def main():
 
         mixed_type_cols = detect_mixed_type_columns(data)
         if mixed_type_cols:
-            if st.button("Reload Data with Specified Types"):
-                data = handle_missing_data(data, mixed_type_cols)
-                for col in mixed_type_cols:
-                    data = standardize_column(data, col)
-                st.success("Data reloaded with specified data types.")
-                st.subheader("Processed CSV Data")
-                st.dataframe(data)  # Display the processed data
+    if st.button("Reload Data with Specified Types"):
+        data = handle_missing_data(data, mixed_type_cols)
+        for col in mixed_type_cols:
+            data = standardize_column(data, col)
+        st.success("Data reloaded with specified data types.")
+        st.subheader("Processed CSV Data")
+        st.dataframe(data)  # Display the processed data
 
-        x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
-        selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
-        selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
-        zip_code_database = load_zip_code_database()
+x_column = st.selectbox("Select X-axis Column for Chart", data.columns.tolist(), index=0)
+selected_map_zip_column = st.selectbox("Select Zip Column for Density Map", data.columns.tolist(), index=0)
+selected_map_value_column = st.selectbox("Select Value Column for Density Map", data.columns.tolist(), index=1)
+zip_code_database = load_zip_code_database()
 
-        selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
-        selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
+selected_index_column = st.selectbox("Select Index Column for Pivot Table (Rows)", data.columns.tolist(), index=0)
+selected_values_column = st.selectbox("Select Values Column for Pivot Table (Columns)", data.columns.tolist(), index=1)
 
-        if st.button("Create Column Chart"):
-            create_column_chart(data, x_column)
+if st.button("Create Column Chart"):
+    create_column_chart(data, x_column)
 
-        if st.button("Create Pie Chart"):
-            create_pie_chart(data, x_column)
+if st.button("Create Pie Chart"):
+    create_pie_chart(data, x_column)
 
-        if st.button("Create Density Map"):
-            create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
+if st.button("Create Density Map"):
+    create_density_map(data, selected_map_zip_column, selected_map_value_column, zip_code_database)
 
-        if st.button("Create Pivot Table"):
-            create_pivot_table(data, selected_index_column, selected_values_column)
+if st.button("Create Pivot Table"):
+    create_pivot_table(data, selected_index_column, selected_values_column)  # Create pivot table from processed data
 
 if __name__ == "__main__":
     main()
