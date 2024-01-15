@@ -15,7 +15,7 @@ def handle_missing_data(data, col_types):
     for col, col_type in col_types.items():
         if col_type == 'str':
             data[col] = data[col].fillna('blank')
-        elif col_type in ['number', 'float']:
+        elif col_type in ['float64', 'int64']:
             if data[col].isnull().any():
                 mean_value = data[col].mean()
                 data[col] = data[col].fillna(mean_value)
@@ -71,7 +71,7 @@ def create_pivot_table(data, index_column, values_column):
 def detect_mixed_type_columns(df):
     mixed_type_columns = {}
     for col in df.columns:
-        col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'number', 'float', 'date/time'], key=f'{col}_selectbox', index=0)
+        col_type = st.selectbox(f"Select data type for '{col}'", ['str', 'float64', 'int64', 'date/time'], key=f'{col}_selectbox', index=0)
         mixed_type_columns[col] = col_type
     return mixed_type_columns
     
